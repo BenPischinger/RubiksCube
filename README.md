@@ -1,4 +1,4 @@
-# RubiksCube
+# Rubik's Cube
  
 A functioning Rubik's Cube Developed in C/C++ and OpenGL.
 
