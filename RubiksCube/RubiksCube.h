@@ -37,6 +37,7 @@ void ClearResources();
 
 glm::vec3 GetAxis(int axis, int faceIndex);
 
+// Colours for the cube textures
 glm::vec3 black = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 white = glm::vec3(1.0f, 1.0f, 1.0f);
 glm::vec3 orange = glm::vec3(1.0f, 0.3f, 0.0f);
@@ -45,8 +46,11 @@ glm::vec3 red = glm::vec3(1.0f, 0.0f, 0.0f);
 glm::vec3 green = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 yellow = glm::vec3(1.0f, 1.0f, 0.0f);
 
+// Determines which direction the light of the lighting shader comes from
+// Currently comes from the big star on the skybox
 static glm::vec3 lightDirection = glm::vec3(9.0f, 13.0f, 7.0f);
 
+// Positions of the point light surrounding the cube
 static glm::vec3 pointLightPosition[] =
 {
 	glm::vec3(5.0f, 0.0f, 0.0f),
@@ -57,6 +61,7 @@ static glm::vec3 pointLightPosition[] =
 	glm::vec3(0.0f, 0.0f, -5.0f),
 };
 
+// Geometrical data cube 
 static std::vector<float>rubiksCubeVertexData = 
 {
 	-1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  0.0,  1.0,
@@ -102,6 +107,7 @@ static std::vector<float>rubiksCubeVertexData =
 	-1.0, -1.0, -1.0,  0.0, -1.0,  0.0,  0.0,  1.0
 };
 
+// Geometrical data of the skybox
 static std::vector<float>skyboxVertexData = 
 {
 	// positions          
@@ -148,6 +154,7 @@ static std::vector<float>skyboxVertexData =
 	 1.0f, -1.0f,  1.0f
 };
 
+// Lookup table to check which sides need to switch when the cube is being rotated 
 static std::vector<std::vector<std::vector<std::string>>> faceLookupTable =
 {
 	{
@@ -193,6 +200,7 @@ static std::vector<std::vector<std::vector<std::string>>> faceLookupTable =
 	},
 };
 
+// Struct to define a move when turn a side of the cube
 struct TurnMove
 {
 	int faceIndex = 0;
@@ -219,6 +227,7 @@ struct TurnMove
 	}
 };
 
+// Method to load the texture from the image files in the solution folder
 static GLuint LoadTexture(std::string textureType, std::vector<std::string> filePath)
 {
 	GLuint texture;
@@ -267,12 +276,13 @@ static GLuint LoadTexture(std::string textureType, std::vector<std::string> file
 	return texture;
 }
 
+// Compares two positions and checks them against an accuracy value, due to vertices sometimes moving from 2.1 to 2.099999
 bool ComparePositions(float a, float b)
 {
 	return std::abs(a - b) <= 0.1f;
 }
 
-
+// Returns the axis that the cube has to be rotated around
 glm::vec3 GetAxis(int axisID, int faceIndex)
 {
 	glm::vec3 axis = glm::vec3(0, 0, 0);
@@ -298,6 +308,7 @@ glm::vec3 GetAxis(int axisID, int faceIndex)
 	return axis;
 }
 
+// Self-explanatory, I hope
 void PrintInscructions()
 {
 	std::cout << "Instructions: \n" << std::endl;

@@ -67,6 +67,8 @@ bool rightArrowPressed = false;
 
 bool fKeyPressed = false;
 
+// Defines a single cubie that is used to build the whole cube
+// Colours, positions and what sides need to be textured are defined here
 class Cubie
 {
 public:
@@ -86,6 +88,7 @@ public:
 		this->cubieTransformationMatrix = glm::translate(this->cubieTransformationMatrix, this->cubiePosition);
 	}
 
+	// Draws the individual cubie and applies the lighting shader
 	void DrawCubie(Shader* lightingShader)
 	{
 		float diffuseMultiplier = 1.50f;
@@ -122,6 +125,8 @@ public:
 		}
 	}
 
+	// Used to rotate the cubes when a move is executed
+	// The matrix is then decomposed to get the updated cubie positions
 	void Rotate(glm::mat4 transformationMatrix, float rotationAngle, glm::vec3 cubieAxis, glm::vec3 worldAxis)
 	{
 		glm::vec3 scale;
@@ -144,16 +149,19 @@ public:
 		}
 	}
 
+	// Adds a cube to the construct
 	void AddCubie(std::vector<glm::vec3> colors, std::array<bool, 6> visible, glm::vec3 position)
 	{
 		cubies.push_back(new Cubie(colors, visible, position));
 	}
 
+	// Copies a cubie
 	void CopyCubie(Cubie& cubieToCopy)
 	{
 		cubies.push_back(&cubieToCopy);
 	}
 
+	// Deletes a cubie
 	void DeleteCubie(Cubie& cubieToRemove)
 	{
 		for (int i = 0; i < cubies.size(); ++i)
@@ -167,6 +175,7 @@ public:
 		}
 	}
 
+	// Returns the position of a cubie
 	void GetPosition(std::vector<glm::vec3> *positions)
 	{
 		positions->push_back(this->cubiePosition);
@@ -177,6 +186,9 @@ public:
 	}
 };
 
+// Main function, initializes OpenGL and the camera
+// Builds the rubiks cube, binds the vertex data, loads textures and clears the resources when the program is closed
+// Contains a while loop as an update method
 int main()
 {
 	if (!InitialiseOpenGL())
@@ -214,6 +226,7 @@ int main()
 	return 0;
 }
 
+// Starts up OpenGL, creates the window and sets multiple flags for rendering
 bool InitialiseOpenGL()
 {
 	glfwInit();
@@ -252,6 +265,9 @@ bool InitialiseOpenGL()
 	//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 }
 
+// Values for the lighting shader are set here
+// Different materials can be simulated based on the values
+// Currently set to look like shiny plastic, like a real rubik's cube
 void InitialiseLighting(Shader* lightingShader, glm::mat4 projection, glm::mat4 view, glm::mat4 model)
 {
 	lightingShader->SetVector3("dirLight.direction", lightDirection);
@@ -281,6 +297,7 @@ void InitialiseLighting(Shader* lightingShader, glm::mat4 projection, glm::mat4 
 	lightingShader->SetMatrix4("model", model);
 }
 
+// Starts up the camera, by setting the view port, yaw and pitch
 void InitialiseCamera()
 {
 	camera.cameraPosition = glm::vec3(8.6f, 6.8f, 13.0f);
@@ -289,6 +306,7 @@ void InitialiseCamera()
 	camera.UpdateCameraVectors();
 }
 
+// Geometrical data of the cube and the skybox are bound to OpenGL vertex arrays and vertex buffer arrays
 void BindVertexData()
 {
 	glGenVertexArrays(1, &rubiksCubeVAO);
@@ -315,6 +333,7 @@ void BindVertexData()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
 }
 
+// Loads the texutres from the given path
 void LoadTextures()
 {
 	rubiksCubeTexture = LoadTexture("cubieTexture", { "Resources/Textures/RubiksCubeTile.png" });
@@ -339,6 +358,10 @@ void LoadTextures()
 	skyboxShader->SetInt("skybox", 0);
 }
 
+
+// The whole rubik's cube is built out of 27 individual cubies
+// The first one is a completely black cubie at the center, followed by 26 cubes arrayed around the center
+// Cubies on the outside of a side are added to the middle cubie of each side, this allows for easier turning of a side by iterating through and rotating all cubies attached to the middle one
 Cubie *rubiksCube = new Cubie({				{black}, {black}, {black}, {black}, {black}, {black} },		{ false, false, false, false, false, false },	glm::vec3(0.0f, 0.0f, 0.0f));
 
 void BuildRubiksCube()
@@ -376,6 +399,7 @@ void BuildRubiksCube()
 	rubiksCube->AddCubie({					{black}, {black}, {black}, {black}, {black}, {yellow} },	{ false, false, false, false, false, true },	glm::vec3(0.0f, -2.1f, 0.0f));
 }
 
+// General function to draw in the window
 void Draw()
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -392,6 +416,7 @@ void Draw()
 	glfwPollEvents();
 }
 
+// Draws the cube so it can be displayed in the window
 void DrawCube(Shader* lightingShader, glm::mat4 projection, glm::mat4 view, glm::mat4 model)
 {
 	lightingShader->Use();
@@ -403,6 +428,7 @@ void DrawCube(Shader* lightingShader, glm::mat4 projection, glm::mat4 view, glm:
 
 }
 
+// Draws the skybox so it can be displayed in the window
 void DrawSkybox(glm::mat4 projection, glm::mat4 view, glm::mat4 model)
 {
 	glDepthMask(GL_FALSE);
@@ -420,6 +446,7 @@ void DrawSkybox(glm::mat4 projection, glm::mat4 view, glm::mat4 model)
 	glDepthMask(GL_TRUE);
 }
 
+// Deals with keyboard inputs and execute move based on inputs
 void ProcessKeyboard(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -641,6 +668,9 @@ void ProcessKeyboard(GLFWwindow* window)
 	}
 }
 
+// Executed when the whole cube is being rotated
+// Checks what the new top and front sides will be after the move and swaps the axis acoordingly to keep track of the cube orientation
+// Adds the move to the move queue so it can be animated in the update method
 void RotateRubiksCube(int moveType)
 {
 	int newFrontFace = 0;
@@ -749,6 +779,9 @@ void RotateRubiksCube(int moveType)
 	}
 }
 
+// Update method is being used to animate the cube
+// Takes a move out of the queue and executes it
+// Positions are moved by a few degrees every frame to achieve a smooth animation
 void Update()
 {
 	if (currentMove.empty() && !moveQueue.empty())
@@ -795,6 +828,8 @@ void Update()
 	}
 }
 
+// Adds turn moves to the queue
+// Put in a separate method so turn moves can be buffered, unlike moves that rotate the whole cube that need to be executed first to keep positions up to date
 void EnqueueTurnMove(int moveType, int moveDirection)
 {
 	int faceIndex = 0;
@@ -844,6 +879,8 @@ void EnqueueTurnMove(int moveType, int moveDirection)
 	moveQueue.insert(moveQueue.begin(), { faceIndex, moveDirection, moveType });
 }
 
+// This determines what cubies are currently at the side that needs to be rotate and copies the 8 cubies on the middle cubie of that side
+// The copies that were copied are then deleted from the middle cubie they were attached to before
 void AttachRingCubies(int faceIndex, std::vector<glm::vec3> positions, std::vector<int> cubePositions)
 {
 	if (cubePositions.size() > 0)
@@ -869,6 +906,8 @@ void AttachRingCubies(int faceIndex, std::vector<glm::vec3> positions, std::vect
 	}
 }
 
+// Called when a key to rotate a side is pressed
+// Calls the AttachRingCubies function and adds the respective move to the queue
 void PerformTurnMove(int faceIndex, int moveDirection, int moveType) 
 {
 	std::vector<glm::vec3> positions = {};
@@ -1018,6 +1057,7 @@ void PerformTurnMove(int faceIndex, int moveDirection, int moveType)
 	}
 }
 
+// Method to keep track of the mouse cursor
 void CursorPosCallback(GLFWwindow *window, double x, double y)
 {
 	if (freeCam)
@@ -1039,6 +1079,7 @@ void CursorPosCallback(GLFWwindow *window, double x, double y)
 	}
 }
 
+// Clears the resources to prevent memory leaks
 void ClearResources()
 {
 	for (int i = 0; i < currentMove.size(); ++i)
